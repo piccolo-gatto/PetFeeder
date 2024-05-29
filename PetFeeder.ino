@@ -7,10 +7,10 @@
 #define LED_PIN 7	
 
 
-GStepper<STEPPER4WIRE> stepper(2048, 10, 12, 11, 13);
+GStepper<STEPPER4WIRE> stepper(100, 10, 12, 11, 13);
 EncButton<EB_TICK, BTN_PIN> btn;
 
-int feedAmount = 3000;
+int feedAmount = 1000;
 
 
 void setup()
@@ -20,9 +20,9 @@ void setup()
   pinMode(LED_PIN, OUTPUT);
 
   Serial.begin(9600);
-
-  stepper.setMaxSpeed(3000);
-  stepper.setAcceleration(500);
+  stepper.setSpeed(10000);
+  stepper.setMaxSpeed(10000);
+  stepper.setAcceleration(10000);
 
 }
 
@@ -37,18 +37,18 @@ void loop()
     digitalWrite(LED_PIN, LOW);
   }
 
-  if (btn.hold()) {
-    digitalWrite(LED_PIN, HIGH);
-    int newAmount = 0;
-    while (btn.isHold()) {
-      btn.tick();
-      anti_jam();
-      newAmount++;
-    }
-    feedAmount = newAmount;
-    EEPROM.put(1, feedAmount);
-    digitalWrite(LED_PIN, LOW);
-  }
+  // if (btn.hold()) {                // NEED FIX
+  //   digitalWrite(LED_PIN, HIGH);
+  //   int newAmount = 0;
+  //   while (btn.isHold()) {
+  //     btn.tick();
+  //     anti_jam();
+  //     newAmount++;
+  //   }
+  //   feedAmount = newAmount;
+  //   EEPROM.put(1, feedAmount);
+  //   digitalWrite(LED_PIN, LOW);
+  // }
 }
 
 void feed() {
@@ -62,6 +62,6 @@ void anti_jam() {
   if (!stepper.tick()) {
     static bool dir;
     dir = !dir;
-    stepper.setTargetDeg(dir ? -1: 70);
+    stepper.setTarget(dir ? -1: 19, RELATIVE);
   }
 }
