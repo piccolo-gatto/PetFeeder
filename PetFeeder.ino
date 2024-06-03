@@ -3,19 +3,20 @@
 
 
 #include <EEPROM.h> // работа с памятью
-#define EE_RESET 15
+#define EE_RESET 1
 #include <Ds1302.h>
-Ds1302 rtc(D8, D6, D7);
+Ds1302 rtc(27, 14, 12);
 
 
-#define BTN_PIN D4
-#define LED_PIN D5
+#define BTN_PIN 33
+#define LED_PIN 32
 
 
-GStepper<STEPPER4WIRE> stepper(2048, D0, D2, D1, D3);
+GStepper<STEPPER4WIRE> stepper(2048, 4, 2, 0, 15);
 EncButton<EB_TICK, BTN_PIN> btn;
 
-int feedAmount = 14000;
+int feedAmount = 1000;
+bool dir = true;
 
 const byte feedTime[][2] = {
   {7, 0},       // часы, минуты. НЕ НАЧИНАТЬ ЧИСЛО С НУЛЯ
@@ -37,16 +38,16 @@ void setup()
     EEPROM.commit();
     if (rtc.isHalted())
     {
-        Serial.println("RTC is halted. Setting time...");
+        //Serial.println("RTC is halted. Setting time...");
 
         Ds1302::DateTime dt = {
             .year = 24,
             .month = Ds1302::MONTH_JUN,
-            .day = 2,
-            .hour = 22,
-            .minute = 5,
-            .second = 10,
-            .dow = Ds1302::DOW_SUN
+            .day = 3,
+            .hour = 16,
+            .minute = 43,
+            .second = 0,
+            .dow = Ds1302::DOW_MON
         };
 
         rtc.setDateTime(&dt);
@@ -55,9 +56,9 @@ void setup()
   EEPROM.get(1, feedAmount);
 
   stepper.setSpeed(10000);
-  //stepper.setMaxSpeed(10000);
-  //stepper.setAcceleration(10000);
-  stepper.setRunMode(KEEP_SPEED);
+  stepper.setMaxSpeed(10000);
+  stepper.setAcceleration(10000);
+  //stepper.setRunMode(KEEP_SPEED);
 
   pinMode(LED_PIN, OUTPUT);
 }
@@ -91,12 +92,14 @@ void loop()
     int newAmount = 0;
     while (btn.isHold()) {
       btn.tick();
+      delay(1);
       anti_jam();
       newAmount++;
-      Serial.println(newAmount);
+      //Serial.println(newAmount);
     }
-    //Serial.println(newAmount);
+    Serial.println(feedAmount);
     feedAmount = newAmount;
+    Serial.println(feedAmount);
     EEPROM.put(1, feedAmount);
     EEPROM.commit();
     digitalWrite(LED_PIN, LOW);
@@ -104,25 +107,31 @@ void loop()
 }
 
 void feed() {
-  // int tmp_fa = feedAmount;
-  // while (tmp_fa>0){
-  //   Serial.println(tmp_fa);
-  //   anti_jam();
-  //   tmp_fa--;
-  // }
-  
+
   digitalWrite(LED_PIN, HIGH);
-  for (int i=0; i< feedAmount; i++){
-    Serial.println(i);
+  int tmp_fa = feedAmount;
+  while (tmp_fa>0){
+    //Serial.println(tmp_fa);
+    //btn.tick();
+    delay(1);
     anti_jam();
+    tmp_fa--;
   }
   digitalWrite(LED_PIN, LOW);
+
+  
+  // digitalWrite(LED_PIN, HIGH);
+  // for (int i=0; i< feedAmount; i++){
+  //   Serial.println(i);
+  //   anti_jam();
+  // }
+  // digitalWrite(LED_PIN, LOW);
 }
 
 void anti_jam() {
   if (!stepper.tick()) {
-    static bool dir;
     dir = !dir;
-    stepper.setTarget(dir ? -7: 12, RELATIVE);
+    //stepper.setSpeed(1500);//dir ? -0 : 1500);
+    stepper.setTarget(dir ? -12 : 19, RELATIVE);
   }
 }
