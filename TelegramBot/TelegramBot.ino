@@ -18,23 +18,21 @@ bool shedule_mode = true;
 String feeder_id = "fdr345622765";
 bool reg_user = false;
 bool reg_feeder = false;
-bool reg_collar = false;
-bool check_feeder = false;
+bool set_shedule = false;
 String comand = "";
-String feeder = "";
 String payload;
 ESP8266WiFiMulti WiFiMulti;
 
 FastBot bot(BOT_TOKEN);
 
-const byte feedTime[][2] = {
+byte feedTime[][2] = {
   {7, 0},       // часы, минуты. НЕ НАЧИНАТЬ ЧИСЛО С НУЛЯ
   {12, 0},
   {17, 0},
   {22, 11},
 };
 
-const char*  comands[] = {"/reg_collar", "/collar_mode_on", "/collar_mode_off", "/collar_mode_off", "/feed", "/get_shedule"}; 
+const char* comands[] = {"/reg_collar", "/collar_mode_on", "/collar_mode_off", "/collar_mode_off", "/feed", "/get_shedule"}; 
 
 void setup() {
 pinMode(LED_PIN, OUTPUT);
@@ -149,7 +147,7 @@ void newMsg(FB_msg& msg) {
             } 
           } 
         }
-  if ((msg.text == "/reg_collar" || msg.text == "/collar_mode_on" || msg.text == "/collar_mode_off" || msg.text == "/collar_mode_off" || msg.text == "/feed" || msg.text == "/get_shedule") && check_feeder == false){
+  if (msg.text == "/set_shedule" || msg.text == "/reg_collar" || msg.text == "/collar_mode_on" || msg.text == "/collar_mode_off" || msg.text == "/collar_mode_off" || msg.text == "/feed" || msg.text == "/get_shedule"){
       comand = msg.text;
       if(http.begin(client, "http://172.20.10.2:8000/feeders_by_user")){
           http.addHeader("accept", "application/json");
@@ -169,12 +167,11 @@ void newMsg(FB_msg& msg) {
         }
       }
   }
-  if (msg.text == feeder_id && check_feeder == false && comand == "/reg_collar"){
+  if (msg.text == feeder_id && comand == "/reg_collar"){
     bot.sendMessage("Введите уникальный номер ошейника, указанный на коробке или в инструкции:", msg.chatID);
   }
-  if (msg.text[0] != 'f' && msg.text[1] != 'd' && msg.text[2] != 'r' && msg.text[0] != '/'){
-    check_feeder = true;
-  if (check_feeder == true && http.begin(client, "http://172.20.10.2:8000/get_feeder_id")){
+  if (msg.text[0] != 'f' && msg.text[1] != 'd' && msg.text[2] != 'r' && msg.text[0] != '/' && set_shedule == false){
+  if (http.begin(client, "http://172.20.10.2:8000/get_feeder_id")){
           http.addHeader("accept", "application/json");
           http.addHeader("Content-Type", "application/json");
           StaticJsonDocument<200> TempDataJSON;
@@ -212,66 +209,54 @@ void newMsg(FB_msg& msg) {
                               payload = http.getString();
                               Serial.println(httpResponseCode);
                               if (httpResponseCode == 200) {
-                                check_feeder = false;
                                 bot.sendMessage("Ваш ошейник успешно зарегестрирован", msg.chatID);
                               }
                             }
                           else {
-                            check_feeder = false;
                             bot.sendMessage("Ваше ошейник уже зарегестрирован", msg.chatID);
                             
                           } 
             }  
   }}}}
-  if (msg.text == feeder_id && check_feeder == false && comand != "/reg_collar"){
-    check_feeder == true;
+  if (msg.text == feeder_id &&comand != "/reg_collar" && comand != "/set_shedule"){
     if (comand == "/collar_mode_on"){
       if (collar_mode == true) bot.sendMessage("Режим распознавания ошейника уже включен", msg.chatID); 
       else {
         collar_mode = true;
         bot.sendMessage("Режим распознавания ошейника включен", msg.chatID); 
-        check_feeder == false;
       }
     }
     if (comand == "/collar_mode_off"){
       if (collar_mode == false) {
         bot.sendMessage("Режим распознавания ошейника уже отключен", msg.chatID); 
-         
-        check_feeder == false;
         }
       else {
         collar_mode = false;
         bot.sendMessage("Режим распознавания ошейника отключен", msg.chatID); 
-        check_feeder == false;
       }
     }
       if (comand == "/shedule_mode_on"){
       if (shedule_mode == true) {
         bot.sendMessage("Режим режим подачи по расписанию уже включен", msg.chatID); 
-        check_feeder == false;
         } 
       else {
         shedule_mode = true;
         bot.sendMessage("Режим режим подачи по расписанию включен", msg.chatID);  
-        check_feeder == false;
       }
     }
     if (comand == "/shedule_mode_off"){
       if (shedule_mode == false){ 
         bot.sendMessage("Режим режим подачи по расписанию уже отключен", msg.chatID); 
-        check_feeder == false;
         }
       else {
         shedule_mode = false;
         bot.sendMessage("Режим режим подачи по расписанию отключен", msg.chatID);  
-        check_feeder == false;
       }
     }
     if (comand == "/feed"){
       bot.sendMessage("Идёт подача корма", msg.chatID); 
       //feed();
       bot.sendMessage("Корм подан", msg.chatID);  
-      check_feeder == false;
     }
 
     if (comand == "/get_shedule"){
@@ -281,14 +266,61 @@ void newMsg(FB_msg& msg) {
       } 
       Serial.println(shedule);
       bot.sendMessage(String(shedule), msg.chatID); 
-      check_feeder == false;
     }
   }
+  if (msg.text == feeder_id && comand == "/set_shedule"){
+    bot.sendMessage("Введите время подачи еды через запятую в формате Ч:М (Например: 8:0, 10:30, 17:0, 21:15):", msg.chatID);
+    set_shedule = true;
+  }
+  if (set_shedule == true && msg.text != feeder_id){
+    String hour = "";
+    String minute = "";
+    bool check_hour = true;
+    bool check_minute = false;
+    int time = 0;
+    for (byte i = 0; i < msg.text.length(); i++){
+      if(msg.text[i] == ':'){
+        check_hour = false;
+        check_minute = true;
+        continue;
+      }
+      if (check_hour == true && check_minute == false){
+        hour += msg.text[i];
+      }
+      if (check_hour == false && check_minute == true){
+        minute += msg.text[i];
+      }
+      if ((msg.text[i] == ',' && msg.text[i+1] == ' ') || i == msg.text.length()-1){
+        
+        feedTime[time][0] = byte(hour.toInt());
+        feedTime[time][1] = byte(minute.toInt());
+        Serial.println(hour+" "+minute);
+        hour = "";
+        minute = "";
+        check_hour = false;
+        check_minute = false;
+        time++;
+        continue;
+      }
+      if(msg.text[i] == ' '){
+        check_hour = true;
+        check_minute = false;
+        continue;
+      }
 
+
+    }
+    bot.sendMessage("Новое расписание установлено", msg.chatID);
+    set_shedule = false;
+  }
 }
 
 
 void loop() {
   bot.tick();
+  if (collar_mode == true && shedule_mode == true){}
+  else if (collar_mode == false && shedule_mode == true){}
+  else if (collar_mode == true && shedule_mode == false){}
+  else if (collar_mode == false && shedule_mode == false){}
 }
 
