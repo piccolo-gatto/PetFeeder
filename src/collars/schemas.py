@@ -17,5 +17,6 @@ class CollarSaved(Collar):
     class Config:
         orm_mode = True
 
-
+class FeederCollar(BaseModel):
+    collars: list
 

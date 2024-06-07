@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
-from src.collars.schemas import Collar, CollarSaved
+from src.collars.schemas import Collar, CollarSaved, FeederCollar
 from src.collars.models import Collars
-from src.feeders.schemas import Feeder
+from src.feeders.schemas import Feeder, FeederID
 from src.feeders.models import Feeders
 from sqlalchemy.orm import Session
 from src.dependencies import get_db
@@ -41,3 +41,16 @@ async def collar_by_feeder_id(request: Collar, db: Session = Depends(get_db)):
     except Exception as e:
         return {'message': e}
     
+
+@router.post("/collars_by_feeder",  response_model=FeederCollar)
+async def collars_by_feeder(request: FeederID, db: Session = Depends(get_db)):
+    feeder = db.query(Feeders).filter(Feeders.feeder == request.feeder).all()
+    print(feeder[0])
+    collars = db.query(Collars).filter(Collars.feeder_id == feeder[0].id).all()
+    try:
+        res = []
+        for collar in collars:
+            res.append(collar.collar)
+        return {'collars': res}
+    except Exception as e:
+        return {'message': e}
