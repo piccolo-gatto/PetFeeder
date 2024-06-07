@@ -2,16 +2,8 @@
 
 ## Описание
 Данное устройство состоит из двух элементов: самой кормушки и ошейника для питомца. 
-Ошейник имеет в себе датчик, сигнал с которого считывает кормушка. Когда питомец с ошейником находится на достаточно близком расстоянии от устройства, происходит подача еды.
+Ошейник имеет в себе датчик, сигнал с которого считывает кормушка. Когда питомец с ошейником находится на достаточно близком расстоянии от устройства, происходит подача еды. </br>
 
-## Первая пробная сборка c Arduino:
-[demonstrations/first_build.jpg](demonstrations/first_build.jpg)
-
-## Вторая пробная сборка с esp8266:
-[demonstrations/first_build.jpg](demonstrations/build_with_esp8266.jpg)
-
-## Итоговая сборка с esp32 (убрали bluetooth-модуль):
-[demonstrations/first_build.jpg](demonstrations/build_with_esp32.jpg)
 
 ## API:
 ### Добавление нового пользователя
@@ -223,3 +215,16 @@
   "message": "None"
 }
 ```
+
+## История
+### Первая пробная сборка c Arduino:
+[demonstrations/first_build.jpg](demonstrations/first_build.jpg)
+
+### Вторая пробная сборка с esp8266:
+[demonstrations/build_with_esp8266.jpg](demonstrations/build_with_esp8266.jpg)
+
+### Итоговая сборка с esp32 (убрали bluetooth-модуль):
+[demonstrations/build_with_esp32.jpg](demonstrations/build_with_esp32.jpg)
+
+### Установка всех элементов в модели:
+[demonstrations/finish_build.jpg](demonstrations/finish_build.jpg)
