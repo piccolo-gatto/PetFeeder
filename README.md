@@ -14,6 +14,9 @@
 ## Демонстрация
 []()
 
+## Схема
+[demonstrations/scheme.png](demonstrations/scheme.png)
+
 ## API:
 ### Добавление нового пользователя
 ```/add_user```
