@@ -38,9 +38,9 @@ byte feedTime[][2] = {
   {22, 11},
 };
 
-#define WIFI_SSID "123"
-#define WIFI_PASS "11111111"
-#define BOT_TOKEN "7200148672:AAFzfXtBfQUQ9nCPOi2KS3UG1VyyR0JwEt0"
+#define WIFI_SSID "YOUR_SSID"
+#define WIFI_PASS "YOUR_PASSWORD"
+#define BOT_TOKEN "YOUR_TOKEN"
 
 bool collar_mode = true;
 bool shedule_mode = true;
