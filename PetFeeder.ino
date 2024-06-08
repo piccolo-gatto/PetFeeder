@@ -2,7 +2,8 @@
 #include "lib/GyverStepper.h"
 #include "lib/EncButton.h"
 #include <FastBot.h>
-#include "WiFi.h"
+#include <WiFi.h>
+#include <HTTPClient.h>
 
 #include <WiFiClient.h>
 
