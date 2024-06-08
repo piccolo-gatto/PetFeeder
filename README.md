@@ -16,7 +16,7 @@
   В файле Collar.ino находится прошивка для ошейника. В файле PetFeeder.ino находится прошивка для кормушки.
 
 ## Демонстрация
-[]()
+[https://youtu.be/il3nEXnl1cY](https://youtu.be/il3nEXnl1cY)
 
 ## Схема
 [demonstrations/scheme.png](demonstrations/scheme.png)
